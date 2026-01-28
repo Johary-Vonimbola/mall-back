@@ -111,7 +111,102 @@ const remove = async (req, res) => {
     res.end();
 }
 
+const activate = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        if (!id) {
+            res.status(400).json(ApiResponse.error(
+                400,
+                'Activation échouée',
+                ['No shop id provided']
+            ));
+            return res.end();
+        }
+
+        const shop = await Shop.findByIdAndUpdate(
+            id,
+            { isActive: true },
+            { new: true }
+        );
+
+        if (!shop) {
+            res.status(404).json(ApiResponse.error(
+                404,
+                'Shop not found',
+                ['Shop does not exist']
+            ));
+            return res.end();
+        }
+
+        res.status(200).json(ApiResponse.succes(
+            200,
+            'Shop activated successfully',
+            shop
+        ));
+        return res.end();
+
+    } catch (err) {
+        res.status(500).json(ApiResponse.error(
+            500,
+            'Error activating shop',
+            [err.message]
+        ));
+        return res.end();
+    }
+};
+
+const deactivate = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        // Vérifier id
+        if (!id) {
+            res.status(400).json(ApiResponse.error(
+                400,
+                'Deactivation failed',
+                ['No shop id provided']
+            ));
+            return res.end();
+        }
+
+        const shop = await Shop.findByIdAndUpdate(
+            id,
+            { isActive: false },
+            { new: true }
+        );
+
+        // Vérifier si shop existe
+        if (!shop) {
+            res.status(404).json(ApiResponse.error(
+                404,
+                'Shop not found',
+                ['Shop does not exist']
+            ));
+            return res.end();
+        }
+
+        res.status(200).json(ApiResponse.succes(
+            200,
+            'Shop deactivated successfully',
+            shop
+        ));
+        return res.end();
+
+    } catch (err) {
+        res.status(500).json(ApiResponse.error(
+            500,
+            'Error deactivating shop',
+            [err.message]
+        ));
+        return res.end();
+    }
+};
+
+
 module.exports.save = save;
 module.exports.getAll = getAll;
 module.exports.update = update;
 module.exports.remove = remove;
+module.exports.activate = activate;
+module.exports.deactivate = deactivate;
