@@ -7,6 +7,7 @@ const authenticationController = require('../controllers/authentication.controll
 const router = express.Router();
 
 router.post('/login', authenticationController.login);
+router.post('/refresh-token', authenticationController.refreshToken);
 
 router.use('/users', authenticationMiddleware.authenticateToken, userRouter);
 router.use('/shops', shopRouter);

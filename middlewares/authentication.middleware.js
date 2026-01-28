@@ -15,13 +15,14 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if(err) {
-            res.status(403, 'Access denied', [err.message])
+            res.status(403).json(ApiResponse.error(
+                403, 'Error authenticating token', [err.message]
+            ))
             res.end();
             return;
         };
         req.user = user;
 
-        console.log(user);
         next();
     });
 };
