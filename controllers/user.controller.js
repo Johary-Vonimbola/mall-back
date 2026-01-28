@@ -1,43 +1,5 @@
 const User = require('../models/User');
 const ApiResponse = require('../utils/ApiResponse');
-const jwt = require('jsonwebtoken');
-
-
-const login = async(req, res) => {
-    try{
-        if(!req.body){
-            res.status(500).json(ApiResponse.error(
-                500, 'Error when login', ['Body request not provided']
-            ));
-        }else{
-            const { username, password } = req.body;
-            if(!username || !password){
-                res.status(500).json(ApiResponse.error(
-                    500, 'Error when login', ['Username or password not provided']
-                ));
-            }else{
-                const user = await User.findOne({name: username, passwordHash: password});
-                if(!user){
-                    res.status(500).json(ApiResponse.error(
-                        500, 'Error when login', ['Wrong information, user not found']
-                    )); 
-                }else{
-                    const { name, _id } = user;
-                    const accessToken = jwt.sign({ name: name, id: _id }, process.env.ACCESS_TOKEN_SECRET);
-                    res.status(200).json(ApiResponse.succes(
-                        200, 'User logged', accessToken
-                    ));
-                }
-            }
-        }
-    }catch(err){
-        res.status(500).json(ApiResponse.error(
-            500, 'Error login user', [err.message]
-        ));
-    }
-    res.end();
-}
-
 
 const save = async (req, res) => {
     try{
@@ -63,6 +25,7 @@ const save = async (req, res) => {
 
 const getAll = async (req, res) => {
     try{
+        console.log(req.user);
         const users = await User.find();
         res.status(200).json(ApiResponse.succes(
             200, 'User record(s)', users
@@ -122,7 +85,6 @@ const remove = async (req, res) => {
     res.end();
 }
 
-module.exports.login = login;
 module.exports.save = save;
 module.exports.getAll = getAll;
 module.exports.update = update;
