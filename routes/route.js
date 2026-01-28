@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post('/login', authenticationController.login);
 router.post('/refresh-token', authenticationController.refreshToken);
+router.post('/logout', authenticationController.logout);
 
 router.use('/users', authenticationMiddleware.authenticateToken, userRouter);
 router.use('/shops', shopRouter);

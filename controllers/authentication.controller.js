@@ -57,7 +57,7 @@ const refreshToken = async(req, res) => {
             500, 'Error refreshing the token', ['No refresh token provided in']
         ));
     }
-    const tokenInDB = RefreshToken.findOne({refreshToken: token});
+    const tokenInDB = await RefreshToken.findOne({refreshToken: token});
     if(!tokenInDB){
         return res.status(403).json(ApiResponse.error(
             500, 'Error refreshing the token', ['Refresh token not valid']
@@ -74,6 +74,31 @@ const refreshToken = async(req, res) => {
     });
 }
 
+const logout = async (req, res) => {
+    if(!req.body){
+        return res.status(500).json(ApiResponse.error(
+            500, 'Error when logout', ['Body request not provided']
+        ));
+    }
+    if(!req.body.refreshToken){
+        return res.status(500).json(ApiResponse.error(
+            500, 'Error when logout', ['Refresh token not provided']
+        ));
+    }
+    const refreshToken = req.body.refreshToken;
+    const refreshTokenDeleted = await RefreshToken.findOneAndDelete({refreshToken: refreshToken});
+    if(!refreshTokenDeleted){
+        return res.status(400).json(ApiResponse.error(
+            400, 'Error when logout', ['Refresh token not found']
+        ));
+    }else{
+        res.status(203).json(ApiResponse.succes(
+            203, 'Successfully logged out'
+        ));
+    }
+}
+
 
 module.exports.login = login;
 module.exports.refreshToken = refreshToken;
+module.exports.logout = logout;
