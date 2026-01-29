@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { ROLE, ROLE_ENUM } = require('../data/Role');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -20,8 +21,8 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["MALL_ADMIN", "SHOP_ADMIN", "CLIENT"],
-        default: "CLIENT",
+        enum: ROLE_ENUM,
+        default: ROLE.CLIENT,
         required: true
     },
     picture: {
