@@ -20,7 +20,7 @@ const login = async(req, res) => {
                 500, 'Error when login', ['Username or password not provided']
             ));
         }
-        const user = await User.findOne({name: username, passwordHash: password});
+        const user = await User.findOne({email: username, passwordHash: password});
         if(!user){
             return res.status(500).json(ApiResponse.error(
                 500, 'Error when login', ['Wrong information, user not found']
