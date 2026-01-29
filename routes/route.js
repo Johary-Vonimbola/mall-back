@@ -1,5 +1,6 @@
 const userRouter = require('./user.route');
 const shopRouter = require('./shop.route');
+const shopCategoryRouter = require('./shopCategory.route');
 const express = require('express');
 const authenticationController = require('../controllers/authentication.controller');
 
@@ -11,5 +12,6 @@ router.post('/logout', authenticationController.logout);
 
 router.use('/users', userRouter);
 router.use('/shops', shopRouter);
+router.use('/shop-categories', shopCategoryRouter);
 
 module.exports = router;

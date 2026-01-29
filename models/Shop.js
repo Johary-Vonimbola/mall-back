@@ -10,6 +10,14 @@ const shopSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: false
+    },
+    category: {
+        type: String,
+        required: true
+    },
+    categoryId: {
+        type: String,
+        required: true
     }
 }, { timestamps: true});
 
