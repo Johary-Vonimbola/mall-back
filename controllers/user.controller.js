@@ -1,7 +1,6 @@
 const User = require('../models/User');
 const ApiResponse = require('../utils/ApiResponse');
 
-
 const save = async (req, res) => {
     try{
         const body = req.body;
