@@ -25,7 +25,6 @@ const save = async (req, res) => {
 
 const getAll = async (req, res) => {
     try{
-        console.log(req.user);
         const users = await User.find();
         res.status(200).json(ApiResponse.succes(
             200, 'User record(s)', users
