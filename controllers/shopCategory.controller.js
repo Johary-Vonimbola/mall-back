@@ -3,113 +3,139 @@ const ApiResponse = require('../utils/ApiResponse');
 
 const getAll = async (req, res) => {
     try {
-        const shopCategorys = await ShopCategory.find();
+        const shopCategories = await ShopCategory.find();
 
-        res.status(200).json(ApiResponse.succes(
+        return res.status(200).json(ApiResponse.succes(
             200,
-            "Shop Categories record(s)",
-            shopCategorys
+            'Shop Categories record(s)',
+            shopCategories
         ));
-
     } catch (err) {
-        res.status(500).json(ApiResponse.error(
+        return res.status(500).json(ApiResponse.error(
             500,
-            "Error retrieving Shop Categories",
-            err.message
-        ));
-    }
-    res.end();
-};
-
-const save = async (req, res) => {
-    try{
-        const body = req.body;
-        if(!body){
-            res.status(500).json(ApiResponse.error(
-                500, 
-                'Error creating Shop Category', 
-                ['No information provided']
-            ));
-        }else{
-            const shopCategory = new ShopCategory(body);
-            await shopCategory.save();
-            res.status(200).json(ApiResponse.succes(
-                200, 
-                'Shop Category created', 
-                shopCategory
-            ));
-        }
-    }catch(err){
-        res.status(500).json(ApiResponse.error(
-            500,
-            "Error creating Shop Category",
+            'Error retrieving Shop Categories',
             [err.message]
         ));
     }
-    res.end();
+};
+
+
+const save = async (req, res) => {
+    try {
+        if (!req.body) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error creating Shop Category',
+                ['No information provided']
+            ));
+        }
+
+        const shopCategory = new ShopCategory(req.body);
+        await shopCategory.save();
+
+        return res.status(201).json(ApiResponse.succes(
+            201,
+            'Shop Category created',
+            shopCategory
+        ));
+
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error creating Shop Category',
+            [err.message]
+        ));
+    }
 };
 
 
 const update = async (req, res) => {
-    try{
-        const id = req.params.id;
-        if(!id){
-            res.status(500).json(ApiResponse.error(
-                500, 
-                'Error updating Shop Category', 
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error updating Shop Category',
                 ['No id provided']
             ));
         }
-        const updateData = req.body;
-        if(!updateData){
-            res.status(500).json(ApiResponse.error(
-                500, 
-                'Error updating Shop Category', 
+
+        if (!req.body) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error updating Shop Category',
                 ['No information provided']
             ));
         }
-        const shopCategory = await ShopCategory.findByIdAndUpdate(id, updateData, { new: true });
-        res.status(200).json(ApiResponse.succes(
-            200, 
-            'Shop Category updated', 
-            shopCategory
-        ));
-    }catch(err){
-        res.status(500).json(ApiResponse.error(
-            500, 
-            'Error updating Shop Category', 
-            [err.message]
-        ));   
-    }
-    res.end();
-};
 
-const remove = async (req, res) => {
-    try{
-        const id = req.params.id;
-        if(!id){
-            res.status(500).json(ApiResponse.error(
-                500, 
-                'Error deleting Shop Category', 
-                ['No id provided']
-            ));
-        }else{
-            const deletedShopCategory = await ShopCategory.findByIdAndDelete(id);
-            res.status(200).json(ApiResponse.succes(
-                200, 
-                'Shop Category deleted', 
-                deletedShopCategory
+        const shopCategory = await ShopCategory.findByIdAndUpdate(
+            id,
+            req.body,
+            { new: true }
+        );
+
+        if (!shopCategory) {
+            return res.status(404).json(ApiResponse.error(
+                404,
+                'Shop Category not found',
+                ['Shop Category does not exist']
             ));
         }
-    }catch(err){
-        res.status(500).json(ApiResponse.error(
-            500, 
-            'Error deleting Shop Category', 
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Shop Category updated',
+            shopCategory
+        ));
+
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error updating Shop Category',
             [err.message]
-        ));   
+        ));
     }
-    res.end();
-}
+};
+
+
+const remove = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error deleting Shop Category',
+                ['No id provided']
+            ));
+        }
+
+        const deletedShopCategory = await ShopCategory.findByIdAndDelete(id);
+
+        if (!deletedShopCategory) {
+            return res.status(404).json(ApiResponse.error(
+                404,
+                'Shop Category not found',
+                ['Shop Category does not exist']
+            ));
+        }
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Shop Category deleted',
+            deletedShopCategory
+        ));
+
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error deleting Shop Category',
+            [err.message]
+        ));
+    }
+};
+
 
 module.exports.save = save;
 module.exports.getAll = getAll;
