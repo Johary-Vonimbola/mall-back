@@ -1,5 +1,6 @@
 const ApiResponse = require('../utils/ApiResponse');
 const ShopRent = require('../models/ShopRent');
+const { FREQUENCY_ENUM, FREQUENCY_MAP } = require('../data/RentFrequency');
 
 
 const getAll = async (req, res) => {
@@ -19,6 +20,22 @@ const getAll = async (req, res) => {
     }
 };
 
+const getAllFrequencies = async (req, res) => {
+    try {
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            "Shop rent frequencies record(s)",
+            FREQUENCY_ENUM
+        ));
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            "Error retrieving shop rents frequencies",
+            [err.message]
+        ));
+    }
+};
+
 const save = async (req, res) => {
     try {
         if (!req.body) {
@@ -29,7 +46,16 @@ const save = async (req, res) => {
             ));
         }
 
-        const shopRent = new ShopRent(req.body);
+        const frequency = FREQUENCY_MAP[req.body.frequencyString];
+        if(!frequency){
+            return res.status(500).json(ApiResponse.error(
+                500,
+                'Error creating shop rent',
+                ['Unknown frequency']
+            ));
+        }
+
+        const shopRent = new ShopRent({...req.body, frequency: frequency});
         await shopRent.save();
 
         return res.status(201).json(ApiResponse.succes(
@@ -95,5 +121,5 @@ const update = async (req, res) => {
 };
 
 module.exports = {
-    getAll, save, update
+    getAll, save, update, getAllFrequencies
 };
