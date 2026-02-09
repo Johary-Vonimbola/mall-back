@@ -6,6 +6,7 @@ const { ROLE } = require('../data/Role');
 
 
 router.get("/", shopCategoryController.getAll);
+router.get("/:id", shopCategoryController.getById);
 router.post("/", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.ADMIN), shopCategoryController.save);
 router.put("/:id", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.ADMIN), shopCategoryController.update);
 router.delete("/:id", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.ADMIN), shopCategoryController.remove);

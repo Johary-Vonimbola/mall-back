@@ -20,6 +20,43 @@ const getAll = async (req, res) => {
 };
 
 
+const getById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error fetching Shop Category',
+                ['No id provided']
+            ));
+        }
+
+        const shopCategory = await ShopCategory.findById(id);
+
+        if (!shopCategory) {
+            return res.status(404).json(ApiResponse.error(
+                404,
+                'Shop Category not found',
+                ['Shop Category does not exist']
+            ));
+        }
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            `Shop Category ${id} record`,
+            shopCategory
+        ));
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error retrieving Shop Categories',
+            [err.message]
+        ));
+    }
+};
+
+
 const save = async (req, res) => {
     try {
         if (!req.body) {
@@ -138,6 +175,7 @@ const remove = async (req, res) => {
 
 
 module.exports.save = save;
+module.exports.getById = getById;
 module.exports.getAll = getAll;
 module.exports.update = update;
 module.exports.remove = remove;
