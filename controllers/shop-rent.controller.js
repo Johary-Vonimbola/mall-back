@@ -20,6 +20,32 @@ const getAll = async (req, res) => {
     }
 };
 
+
+const getById = async (req, res) => {
+    try {
+        if(!req.params.id){
+            return res.status(500).json(ApiResponse.error(
+                500,
+                'Error retrieving shop rent',
+                ['No id provided']
+            ));
+        };
+        const id = req.params.id;
+        const result = await ShopRent.findById(id);
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            "Shop rent record(s)",
+            result
+        ));
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            "Error retrieving shop rent",
+            [err.message]
+        ));
+    }
+};
+
 const getAllFrequencies = async (req, res) => {
     try {
         return res.status(200).json(ApiResponse.succes(
@@ -73,6 +99,9 @@ const save = async (req, res) => {
     }
 };
 
+const updateShopRent = async (id, data) => {
+    return await ShopRent.findByIdAndUpdate(id, data, { new: true })
+};
 
 
 const update = async (req, res) => {
@@ -95,7 +124,7 @@ const update = async (req, res) => {
             ));
         }
 
-        const shopRent = await ShopRent.findByIdAndUpdate(id, req.body, { new: true });
+        const shopRent = updateShopRent(id, req.body);
 
         if (!shopRent) {
             return res.status(404).json(ApiResponse.error(
@@ -120,6 +149,81 @@ const update = async (req, res) => {
     }
 };
 
+const deactivate = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error deactivating shop rent',
+                ['No id provided']
+            ));
+        }
+
+        const shopRent = await updateShopRent(id, { isActive: false });
+
+        if (!shopRent) {
+            return res.status(404).json(ApiResponse.error(
+                404,
+                'Shop rent not found',
+                ['Shop rent does not exist']
+            ));
+        }
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Shop rent deactivated',
+            shopRent
+        ));
+
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error deactivating shop rent',
+            [err.message]
+        ));
+    }
+};
+
+const activate = async(req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error activating shop rent',
+                ['No id provided']
+            ));
+        }
+
+        const shopRent = await updateShopRent(id, { isActive: true });
+
+        if (!shopRent) {
+            return res.status(404).json(ApiResponse.error(
+                404,
+                'Shop rent not found',
+                ['Shop rent does not exist']
+            ));
+        }
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Shop rent activated',
+            shopRent
+        ));
+
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error activating shop rent',
+            [err.message]
+        ));
+    }
+};
+
 module.exports = {
-    getAll, save, update, getAllFrequencies
+    getAll, save, update, getAllFrequencies, deactivate, activate,
+    getById
 };

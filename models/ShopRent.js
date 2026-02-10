@@ -8,6 +8,9 @@ const shopRentSchema = new mongoose.Schema({
         ref: 'shop',
         required: true
     },
+    shopName: {
+        type: String
+    },
     amount: {
         type: Number,
         required: true
@@ -24,6 +27,10 @@ const shopRentSchema = new mongoose.Schema({
     },
     dueDate: {
         type: Number
+    },
+    isActive: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
