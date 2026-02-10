@@ -99,7 +99,7 @@ const upload = async (req, res) => {
         const updateData = { ...req.body };
 
         if (req.file) {
-            updateData.logo = `${PathPictureProduct}/${req.file.filename}`;
+            updateData.picture = `${PathPictureProduct}/${req.file.filename}`;
         }
 
         const product = await Product.findByIdAndUpdate(
