@@ -6,8 +6,8 @@ const upload = require("../middlewares/upload.middleware");
 const { ROLE } = require('../data/Role');
 const { PathPictureProduct } = require('../data/PathUpload');
 
-router.get("/", productController.getAll);
-router.get("/:id", productController.getById);
+router.get("/:shopId", productController.getAll);
+router.get("/:shopId/:id", productController.getById);
 router.post("/", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.ADMIN), productController.save);
 
 router.post('/:id/upload', authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.SHOP), 

@@ -4,7 +4,12 @@ const { PathPictureProduct } = require('../data/PathUpload');
 
 const getAll = async (req, res) => {
     try {
-        const products = await Product.find();
+        const { shopId } = req.params;
+
+        const products = await Product.find({
+            shopId : shopId
+        });
+
         return res.status(200).json(ApiResponse.succes(
             200,
             "Product record(s)",
@@ -21,7 +26,7 @@ const getAll = async (req, res) => {
 
 const getById = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { shopId , id } = req.params;
 
         if (!id) {
             return res.status(400).json(ApiResponse.error(
