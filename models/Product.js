@@ -10,7 +10,8 @@ const productSchema = new mongoose.Schema({
         required: true
     },
     uomId: {
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'uom',
         required: true
     },
     price: {
@@ -18,7 +19,8 @@ const productSchema = new mongoose.Schema({
         required: true
     },
     shopId: {
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'shop',
         required: true
     },
     picture: {
@@ -33,7 +35,8 @@ const productSchema = new mongoose.Schema({
         required: true
     },
     categoryId: {
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'product_category',
         required: true
     }
 }, { timestamps: true});
