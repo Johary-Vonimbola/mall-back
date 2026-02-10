@@ -11,6 +11,6 @@ const unitSchema = new mongoose.Schema({
     },
 }, { timestamps: true});
 
-const Unit = mongoose.model('unit', unitSchema);
+const Unit = mongoose.model('uom', unitSchema);
 
 module.exports = Unit;

@@ -16,7 +16,8 @@ const shopSchema = new mongoose.Schema({
         required: true
     },
     categoryId: {
-        type: String,
+        type: mongoose.Types.ObjectId,
+        ref: 'shop_category',
         required: true
     }
 }, { timestamps: true});
