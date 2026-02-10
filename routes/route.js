@@ -7,7 +7,7 @@ const unitRouter = require('./unit.route');
 const productRouter = require('./product.route');
 const productCategoryRouter = require('./productCategory.route');
 const authenticationController = require('../controllers/authentication.controller');
-const shopRentRouter = require('./shop-rent.route');
+const shopRentRouter = require('./shopRent.route');
 
 const router = express.Router();
 

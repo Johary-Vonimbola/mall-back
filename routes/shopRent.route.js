@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAll, save, update, getAllFrequencies, deactivate, activate, getById } = require('../controllers/shop-rent.controller');
+const { getAll, save, update, getAllFrequencies, deactivate, activate, getById } = require('../controllers/shopRent.controller');
 const { authenticateToken, authenticateRole } = require('../middlewares/authentication.middleware');
 const { ROLE } = require('../data/Role');
 
