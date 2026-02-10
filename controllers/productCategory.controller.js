@@ -1,19 +1,19 @@
-const ShopCategory = require('../models/ShopCategory');
+const ProductCategory = require('../models/ProductCategory');
 const ApiResponse = require('../utils/ApiResponse');
 
 const getAll = async (req, res) => {
     try {
-        const shopCategories = await ShopCategory.find();
+        const productCategories = await ProductCategory.find();
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop Categories record(s)',
-            shopCategories
+            'Product Categories record(s)',
+            productCategories
         ));
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error retrieving Shop Categories',
+            'Error retrieving Product Categories',
             [err.message]
         ));
     }
@@ -27,30 +27,30 @@ const getById = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error fetching Shop Category',
+                'Error fetching Product Category',
                 ['No id provided']
             ));
         }
 
-        const shopCategory = await ShopCategory.findById(id);
+        const productCategory = await ProductCategory.findById(id);
 
-        if (!shopCategory) {
+        if (!productCategory) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop Category not found',
-                ['Shop Category does not exist']
+                'Product Category not found',
+                ['Product Category does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            `Shop Category ${id} record`,
-            shopCategory
+            `Product Category ${id} record`,
+            productCategory
         ));
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error retrieving Shop Categories',
+            'Error retrieving Product Categories',
             [err.message]
         ));
     }
@@ -62,24 +62,24 @@ const save = async (req, res) => {
         if (!req.body) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error creating Shop Category',
+                'Error creating Product Category',
                 ['No information provided']
             ));
         }
 
-        const shopCategory = new ShopCategory(req.body);
-        await shopCategory.save();
+        const productCategory = new ProductCategory(req.body);
+        await productCategory.save();
 
         return res.status(201).json(ApiResponse.succes(
             201,
-            'Shop Category created',
-            shopCategory
+            'Product Category created',
+            productCategory
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error creating Shop Category',
+            'Error creating Product Category',
             [err.message]
         ));
     }
@@ -93,7 +93,7 @@ const update = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error updating Shop Category',
+                'Error updating Product Category',
                 ['No id provided']
             ));
         }
@@ -101,35 +101,35 @@ const update = async (req, res) => {
         if (!req.body) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error updating Shop Category',
+                'Error updating Product Category',
                 ['No information provided']
             ));
         }
 
-        const shopCategory = await ShopCategory.findByIdAndUpdate(
+        const productCategory = await ProductCategory.findByIdAndUpdate(
             id,
             req.body,
             { new: true }
         );
 
-        if (!shopCategory) {
+        if (!productCategory) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop Category not found',
-                ['Shop Category does not exist']
+                'Product Category not found',
+                ['Product Category does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop Category updated',
-            shopCategory
+            'Product Category updated',
+            productCategory
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error updating Shop Category',
+            'Error updating Product Category',
             [err.message]
         ));
     }
@@ -143,31 +143,31 @@ const remove = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error deleting Shop Category',
+                'Error deleting Product Category',
                 ['No id provided']
             ));
         }
 
-        const deletedShopCategory = await ShopCategory.findByIdAndDelete(id);
+        const deletedproductCategory = await ProductCategory.findByIdAndDelete(id);
 
-        if (!deletedShopCategory) {
+        if (!deletedproductCategory) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop Category not found',
-                ['Shop Category does not exist']
+                'Product Category not found',
+                ['Product Category does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop Category deleted',
-            deletedShopCategory
+            'Product Category deleted',
+            deletedproductCategory
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error deleting Shop Category',
+            'Error deleting Product Category',
             [err.message]
         ));
     }

@@ -1,19 +1,19 @@
-const Shop = require('../models/Shop');
+const Product = require('../models/Product');
 const ApiResponse = require('../utils/ApiResponse');
-const { PathLogoShop } = require('../data/PathUpload');
+const { PathPictureProduct } = require('../data/PathUpload');
 
 const getAll = async (req, res) => {
     try {
-        const shops = await Shop.find();
+        const products = await Product.find();
         return res.status(200).json(ApiResponse.succes(
             200,
-            "Shop record(s)",
-            shops
+            "Product record(s)",
+            products
         ));
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            "Error retrieving shops",
+            "Error retrieving products",
             [err.message]
         ));
     }
@@ -26,30 +26,30 @@ const getById = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error fecthing shop',
+                'Error fecthing product',
                 ['No id provided']
             ));
         }
 
-        const shop = await Shop.findById(id);
+        const product = await Product.findById(id);
 
-        if (!shop) {
+        if (!product) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop not found',
-                ['Shop does not exist']
+                'Product not found',
+                ['Product does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            `Shop ${id} record`,
-            shop
+            `Product ${id} record`,
+            product
         ));
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            "Error retrieving shops",
+            "Error retrieving products",
             [err.message]
         ));
     }
@@ -60,24 +60,24 @@ const save = async (req, res) => {
         if (!req.body) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error creating shop',
+                'Error creating product',
                 ['No information provided']
             ));
         }
 
-        const shop = new Shop(req.body);
-        await shop.save();
+        const product = new Product(req.body);
+        await product.save();
 
         return res.status(201).json(ApiResponse.succes(
             201,
-            'Shop created',
-            shop
+            'Product created',
+            product
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error creating shop',
+            'Error creating product',
             [err.message]
         ));
     }
@@ -91,7 +91,7 @@ const upload = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error updating shop',
+                'Error updating product',
                 ['No id provided']
             ));
         }
@@ -99,33 +99,33 @@ const upload = async (req, res) => {
         const updateData = { ...req.body };
 
         if (req.file) {
-            updateData.logo = `${PathLogoShop}/${req.file.filename}`;
+            updateData.picture = `${PathPictureProduct}/${req.file.filename}`;
         }
 
-        const shop = await Shop.findByIdAndUpdate(
+        const product = await Product.findByIdAndUpdate(
             id,
             updateData,
             { new: true }
         );
 
-        if (!shop) {
+        if (!product) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop not found',
-                ['Shop does not exist']
+                'Product not found',
+                ['Product does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop updated',
-            shop
+            'Product updated',
+            product
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error updating shop',
+            'Error updating product',
             [err.message]
         ));
     }
@@ -139,7 +139,7 @@ const update = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error updating shop',
+                'Error updating product',
                 ['No id provided']
             ));
         }
@@ -147,31 +147,31 @@ const update = async (req, res) => {
         if (!req.body) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error updating shop',
+                'Error updating product',
                 ['No information provided']
             ));
         }
 
-        const shop = await Shop.findByIdAndUpdate(id, req.body, { new: true });
+        const product = await Product.findByIdAndUpdate(id, req.body, { new: true });
 
-        if (!shop) {
+        if (!product) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop not found',
-                ['Shop does not exist']
+                'Product not found',
+                ['Product does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop updated',
-            shop
+            'Product updated',
+            product
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error updating shop',
+            'Error updating product',
             [err.message]
         ));
     }
@@ -185,31 +185,31 @@ const remove = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error deleting shop',
+                'Error deleting product',
                 ['No id provided']
             ));
         }
 
-        const deletedShop = await Shop.findByIdAndDelete(id);
+        const deletedProduct = await Product.findByIdAndDelete(id);
 
-        if (!deletedShop) {
+        if (!deletedProduct) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop not found',
-                ['Shop does not exist']
+                'Product not found',
+                ['Product does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop deleted',
-            deletedShop
+            'Product deleted',
+            deletedProduct
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error deleting shop',
+            'Error deleting product',
             [err.message]
         ));
     }
@@ -224,34 +224,34 @@ const activate = async (req, res) => {
             return res.status(400).json(ApiResponse.error(
                 400,
                 'Activation failed',
-                ['No shop id provided']
+                ['No product id provided']
             ));
         }
 
-        const shop = await Shop.findByIdAndUpdate(
+        const product = await Product.findByIdAndUpdate(
             id,
             { isActive: true },
             { new: true }
         );
 
-        if (!shop) {
+        if (!product) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop not found',
-                ['Shop does not exist']
+                'Product not found',
+                ['Product does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop activated successfully',
-            shop
+            'Product activated successfully',
+            product
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error activating shop',
+            'Error activating product',
             [err.message]
         ));
     }
@@ -266,34 +266,34 @@ const deactivate = async (req, res) => {
             return res.status(400).json(ApiResponse.error(
                 400,
                 'Deactivation failed',
-                ['No shop id provided']
+                ['No product id provided']
             ));
         }
 
-        const shop = await Shop.findByIdAndUpdate(
+        const product = await Product.findByIdAndUpdate(
             id,
             { isActive: false },
             { new: true }
         );
 
-        if (!shop) {
+        if (!product) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop not found',
-                ['Shop does not exist']
+                'Product not found',
+                ['Product does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop deactivated successfully',
-            shop
+            'Product deactivated successfully',
+            product
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error deactivating shop',
+            'Error deactivating product',
             [err.message]
         ));
     }

@@ -1,19 +1,19 @@
-const ShopCategory = require('../models/ShopCategory');
+const Status = require('../models/Status');
 const ApiResponse = require('../utils/ApiResponse');
 
 const getAll = async (req, res) => {
     try {
-        const shopCategories = await ShopCategory.find();
+        const statusList = await Status.find();
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop Categories record(s)',
-            shopCategories
+            "Status record(s)",
+            statusList
         ));
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error retrieving Shop Categories',
+            "Error for fetching status list",
             [err.message]
         ));
     }
@@ -27,59 +27,58 @@ const getById = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error fetching Shop Category',
+                'Error fecthing status',
                 ['No id provided']
             ));
         }
 
-        const shopCategory = await ShopCategory.findById(id);
+        const status = await Status.findById(id);
 
-        if (!shopCategory) {
+        if (!status) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop Category not found',
-                ['Shop Category does not exist']
+                'Status not found',
+                ['Status does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            `Shop Category ${id} record`,
-            shopCategory
+            `Status ${id} record`,
+            status
         ));
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error retrieving Shop Categories',
+            "Error retrieving status",
             [err.message]
         ));
     }
 };
-
 
 const save = async (req, res) => {
     try {
         if (!req.body) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error creating Shop Category',
+                'Error creating status',
                 ['No information provided']
             ));
         }
 
-        const shopCategory = new ShopCategory(req.body);
-        await shopCategory.save();
+        const status = new Status(req.body);
+        await status.save();
 
         return res.status(201).json(ApiResponse.succes(
             201,
-            'Shop Category created',
-            shopCategory
+            'Status created',
+            status
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error creating Shop Category',
+            'Error creating status',
             [err.message]
         ));
     }
@@ -93,7 +92,7 @@ const update = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error updating Shop Category',
+                'Error updating status',
                 ['No id provided']
             ));
         }
@@ -101,35 +100,31 @@ const update = async (req, res) => {
         if (!req.body) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error updating Shop Category',
+                'Error updating status',
                 ['No information provided']
             ));
         }
 
-        const shopCategory = await ShopCategory.findByIdAndUpdate(
-            id,
-            req.body,
-            { new: true }
-        );
+        const status = await Status.findByIdAndUpdate(id, req.body, { new: true });
 
-        if (!shopCategory) {
+        if (!status) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop Category not found',
-                ['Shop Category does not exist']
+                'Status not found',
+                ['Status does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop Category updated',
-            shopCategory
+            'Status updated',
+            status
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error updating Shop Category',
+            'Error updating status',
             [err.message]
         ));
     }
@@ -143,39 +138,38 @@ const remove = async (req, res) => {
         if (!id) {
             return res.status(400).json(ApiResponse.error(
                 400,
-                'Error deleting Shop Category',
+                'Error deleting status',
                 ['No id provided']
             ));
         }
 
-        const deletedShopCategory = await ShopCategory.findByIdAndDelete(id);
+        const deletedStatus = await Status.findByIdAndDelete(id);
 
-        if (!deletedShopCategory) {
+        if (!deletedStatus) {
             return res.status(404).json(ApiResponse.error(
                 404,
-                'Shop Category not found',
-                ['Shop Category does not exist']
+                'Status not found',
+                ['Status does not exist']
             ));
         }
 
         return res.status(200).json(ApiResponse.succes(
             200,
-            'Shop Category deleted',
-            deletedShopCategory
+            'Status deleted',
+            deletedStatus
         ));
 
     } catch (err) {
         return res.status(500).json(ApiResponse.error(
             500,
-            'Error deleting Shop Category',
+            'Error deleting status',
             [err.message]
         ));
     }
 };
 
-
 module.exports.save = save;
-module.exports.getById = getById;
 module.exports.getAll = getAll;
+module.exports.getById = getById;
 module.exports.update = update;
 module.exports.remove = remove;
