@@ -9,6 +9,7 @@ const { PathLogoShop } = require('../data/PathUpload');
 router.get("/", shopController.getAll);
 router.get("/:id", shopController.getById);
 router.post("/", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.ADMIN), shopController.save);
+router.post("/admin", authMiddleware.authenticateToken, shopController.getByIdUser);
 
 router.post('/:id/upload', authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.SHOP), 
   (req, res, next) => {

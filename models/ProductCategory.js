@@ -8,7 +8,7 @@ const productCategory = new mongoose.Schema({
     shopId: {
         type: mongoose.Types.ObjectId,
         ref: 'shop',
-        // required: true
+        required: true
     }
 }, { timestamps: true});
 

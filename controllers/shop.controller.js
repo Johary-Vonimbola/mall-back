@@ -1,6 +1,9 @@
 const Shop = require('../models/Shop');
 const ApiResponse = require('../utils/ApiResponse');
 const { PathLogoShop } = require('../data/PathUpload');
+const { ROLE } = require('../data/Role');
+const User = require('../models/User');
+const { default: mongoose } = require('mongoose');
 
 const getAll = async (req, res) => {
     try {
@@ -18,6 +21,34 @@ const getAll = async (req, res) => {
         ));
     }
 };
+
+const getByIdUser = async(req, res) => {
+    try{
+        if(!req.body){
+            return res.status(500).json(ApiResponse.error(
+                500,
+                'Error when retrieving shop',
+                ['No body provided']
+            ));
+        }
+        const idUser = req.body.idUser;
+        const shop = await Shop.find({ admin: idUser });
+        if(!shop){
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error where retrieving shop',
+                ['User unknown as an admin-shop']
+            ));
+        }
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Shop record',
+            shop[0]
+        ));
+    }catch(err){
+
+    }
+}
 
 const getById = async (req, res) => {
     try {
@@ -56,6 +87,8 @@ const getById = async (req, res) => {
 };
 
 const save = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         if (!req.body) {
             return res.status(400).json(ApiResponse.error(
@@ -65,8 +98,23 @@ const save = async (req, res) => {
             ));
         }
 
-        const shop = new Shop(req.body);
+        const userData = {
+            name: req.body.name,
+            email: `${req.body.name}@gmail.com`,
+            passwordHash: `${req.body.name}pwd`,
+            contact: ` `,
+            role: ROLE.SHOP,
+            picture: req.body.logo
+        };
+
+        const shopUser = new User(userData);
+        await shopUser.save();
+
+        const shop = new Shop({...req.body, admin: shopUser.id});
         await shop.save();
+
+        session.commitTransaction();
+        session.endSession();
 
         return res.status(201).json(ApiResponse.succes(
             201,
@@ -75,6 +123,8 @@ const save = async (req, res) => {
         ));
 
     } catch (err) {
+        session.abortTransaction();
+        session.endSession();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error creating shop',
@@ -307,3 +357,4 @@ module.exports.upload = upload;
 module.exports.remove = remove;
 module.exports.activate = activate;
 module.exports.deactivate = deactivate;
+module.exports.getByIdUser = getByIdUser;

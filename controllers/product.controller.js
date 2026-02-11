@@ -69,8 +69,8 @@ const save = async (req, res) => {
                 ['No information provided']
             ));
         }
-
-        const product = new Product(req.body);
+        const data = {...req.body, picture: req.file?.filename ?? ''}
+        const product = new Product(data);
         await product.save();
 
         return res.status(201).json(ApiResponse.succes(
