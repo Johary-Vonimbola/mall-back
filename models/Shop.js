@@ -19,6 +19,11 @@ const shopSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: 'shop_category',
         required: true
+    },
+    admin: {
+        type: mongoose.Types.ObjectId,
+        ref: 'users',
+        required: true
     }
 }, { timestamps: true});
 

@@ -44,13 +44,13 @@ const authenticateRole = role => {
                 403, 'Acces denied', ['You don\'t have the access to this ressource']
             )); 
         }
-        if(id){
-            if(req.user.id !== id && req.user.role !== ROLE.ADMIN){
-                return res.status(403).json(ApiResponse.error(
-                    403, 'Acces denied', ['You don\'t have the access to this ressource']
-                )); 
-            }
-        }
+        // if(id){
+        //     if(req.user.id !== id && req.user.role !== ROLE.ADMIN){
+        //         return res.status(403).json(ApiResponse.error(
+        //             403, 'Acces denied', ['You don\'t have the access to this ressource']
+        //         )); 
+        //     }
+        // }
         next();
     }
 }
