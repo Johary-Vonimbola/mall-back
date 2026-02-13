@@ -1,0 +1,137 @@
+const StockMove = require('../models/StockMove');
+const StockMoveLine = require('../models/StockMoveLine');
+const ApiResponse = require('../utils/ApiResponse');
+
+const save = async(req, res) => {
+    try{
+        if(!req.body){
+            return res.status(500).json(ApiResponse.error(
+                500,
+                'Error when saving the stock move',
+                ['No body provided']
+            ));
+        }
+        const { date, shopId, lines } = req.body;
+        const stockMove = new StockMove({ shopId, date });
+        await stockMove.save();
+
+        lines.forEach(line => {
+            line.parentId = stockMove._id;
+        });
+
+        await StockMoveLine.insertMany(lines);
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Stock move created successfully',
+            {
+                parent: stockMove,
+                lines: lines
+            }
+        ));
+    }catch(err){
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error when saving the stock move',
+            [err.message]
+        ));
+    }
+
+};
+
+const getStockMoves = async (req, res) => {
+    try {
+        const { shopId } = req.params;
+
+        if (!shopId) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error fetching stock moves',
+                ['No shopId provided']
+            ));
+        }
+
+        const stockMoves = await StockMove.find({
+            shopId: shopId
+        }).sort({ date: -1 });
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Stock move record(s)',
+            stockMoves
+        ));
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error retrieving stock moves',
+            [err.message]
+        ));
+    }
+};
+
+const getStockMoveLines = async (req, res) => {
+    try {
+        const { parentId } = req.params;
+
+        if (!parentId) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error fetching stock move lines',
+                ['No parentId provided']
+            ));
+        }
+
+        const stockMoveLines = await StockMoveLine.find({
+            parentId: parentId
+        }).sort({ createdAt: -1 });
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Stock move line record(s)',
+            stockMoveLines
+        ));
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error retrieving stock move lines',
+            [err.message]
+        ));
+    }
+};
+
+const getStockMoveLinesByProduct = async (req, res) => {
+    try {
+        const { productId } = req.params;
+
+        if (!productId) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error fetching stock move lines',
+                ['No productId provided']
+            ));
+        }
+
+        const stockMoveLines = await StockMoveLine.find({
+            productId: productId
+        }).sort({ createdAt: -1 });
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Stock move line record(s) by product',
+            stockMoveLines
+        ));
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error retrieving stock move lines',
+            [err.message]
+        ));
+    }
+};
+
+module.exports = {
+    save,
+    getStockMoves,
+    getStockMoveLines,
+    getStockMoveLinesByProduct
+};
