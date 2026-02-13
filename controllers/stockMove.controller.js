@@ -1,6 +1,14 @@
+const Product = require('../models/Product');
 const StockMove = require('../models/StockMove');
 const StockMoveLine = require('../models/StockMoveLine');
 const ApiResponse = require('../utils/ApiResponse');
+
+const updateStockProduct = async (productId, quantity, type) => {
+    if(type === 'OUT') quantity *= -1;
+    await Product.findByIdAndUpdate(productId, {
+        $inc: { stock: quantity }
+    }, { new: true });
+}
 
 const save = async(req, res) => {
     try{
@@ -20,6 +28,10 @@ const save = async(req, res) => {
         });
 
         await StockMoveLine.insertMany(lines);
+
+        lines.forEach(async line => {
+            await updateStockProduct(line.productId, line.quantity, line.type);
+        });
 
         return res.status(200).json(ApiResponse.succes(
             200,
