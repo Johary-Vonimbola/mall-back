@@ -9,6 +9,7 @@ const productCategoryRouter = require('./productCategory.route');
 const authenticationController = require('../controllers/authentication.controller');
 const shopRentRouter = require('./shopRent.route');
 const stockMoveRouter = require('./stockMove.route');
+const cartRouter = require('./cart.route');
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use('/products', productRouter);
 router.use('/product-categories', productCategoryRouter);
 
 router.use('/stock-moves', stockMoveRouter);
+router.use('/cart', cartRouter);
 
 module.exports = router;
