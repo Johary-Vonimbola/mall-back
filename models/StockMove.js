@@ -9,6 +9,9 @@ const stockMoveSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true
+    },
+    description: {
+        type: String
     }
 }, {
     timestamps: true
