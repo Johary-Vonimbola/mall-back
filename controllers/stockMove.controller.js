@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const Product = require('../models/Product');
 const StockMove = require('../models/StockMove');
 const StockMoveLine = require('../models/StockMoveLine');
@@ -141,9 +142,58 @@ const getStockMoveLinesByProduct = async (req, res) => {
     }
 };
 
+const configThreshold = async(req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        if (!req.body) {
+            return res.status(400).json(ApiResponse.error(
+                400,
+                'Error configuring thesholds',
+                ['No information provided']
+            ));
+        }
+
+        const thresholds = req.body;
+        const results = [];
+        for(let t of thresholds){
+            const product = await Product.findByIdAndUpdate(t.productId, { stockThreshold: t.threshold }, { new: true });
+
+            if (!product) {
+                session.abortTransaction();
+                return res.status(404).json(ApiResponse.error(
+                    404,
+                    'Product not found',
+                    ['Product does not exist']
+                ));
+            }
+            results.push(product);
+        }
+
+        session.commitTransaction();
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Thresholds configuration done',
+            results
+        ));
+
+    } catch (err) {
+        session.abortTransaction();
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error updating product',
+            [err.message]
+        ));
+    } finally {
+        session.endSession();
+    }
+}
+
+
 module.exports = {
     save,
     getStockMoves,
     getStockMoveLines,
-    getStockMoveLinesByProduct
+    getStockMoveLinesByProduct,
+    configThreshold
 };
