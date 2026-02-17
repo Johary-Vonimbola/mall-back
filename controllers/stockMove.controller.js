@@ -12,7 +12,7 @@ const updateStockProduct = async (productId, quantity, type) => {
 }
 
 const saveStockMove = async (date, shopId, description='', lines) => {
-    const stockMove = new StockMove({ shopId, date });
+    const stockMove = new StockMove({ shopId, date, description });
     await stockMove.save();
 
     lines.forEach(line => {
