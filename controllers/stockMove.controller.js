@@ -11,29 +11,39 @@ const updateStockProduct = async (productId, quantity, type) => {
     }, { new: true });
 }
 
+const saveStockMove = async (date, shopId, description='', lines) => {
+    const stockMove = new StockMove({ shopId, date });
+    await stockMove.save();
+
+    lines.forEach(line => {
+        line.parentId = stockMove._id;
+    });
+
+    await StockMoveLine.insertMany(lines);
+
+    lines.forEach(async line => {
+        await updateStockProduct(line.productId, line.quantity, line.type);
+    });
+    return stockMove;
+}
+
 const save = async(req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try{
         if(!req.body){
+            session.abortTransaction();
             return res.status(500).json(ApiResponse.error(
                 500,
                 'Error when saving the stock move',
                 ['No body provided']
             ));
         }
-        const { date, shopId, lines } = req.body;
-        const stockMove = new StockMove({ shopId, date });
-        await stockMove.save();
+        const { date, shopId, lines, description='' } = req.body;
 
-        lines.forEach(line => {
-            line.parentId = stockMove._id;
-        });
+        const stockMove = await saveStockMove(date, shopId, description, lines);
 
-        await StockMoveLine.insertMany(lines);
-
-        lines.forEach(async line => {
-            await updateStockProduct(line.productId, line.quantity, line.type);
-        });
-
+        session.commitTransaction();
         return res.status(200).json(ApiResponse.succes(
             200,
             'Stock move created successfully',
@@ -43,11 +53,14 @@ const save = async(req, res) => {
             }
         ));
     }catch(err){
+        session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error when saving the stock move',
             [err.message]
         ));
+    }finally{
+        session.endSession();
     }
 
 };
