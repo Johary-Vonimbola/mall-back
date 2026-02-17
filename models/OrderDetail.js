@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const cardDetailSchema = new mongoose.Schema({
-    cardId: {
+    orderId: {
         type: mongoose.Types.ObjectId,
-        ref: 'card',
+        ref: 'order',
         required: true
     },
     quantity: {
@@ -20,8 +20,7 @@ const cardDetailSchema = new mongoose.Schema({
         ref: 'product',
         required: true
     },
-    productName: 
-    {
+    productName: {
         type: String,
         required: true
     },
