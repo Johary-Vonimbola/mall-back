@@ -208,5 +208,6 @@ module.exports = {
     getStockMoves,
     getStockMoveLines,
     getStockMoveLinesByProduct,
-    configThreshold
+    configThreshold,
+    saveStockMove
 };
