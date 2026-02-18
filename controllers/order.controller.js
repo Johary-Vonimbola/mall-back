@@ -156,13 +156,10 @@ const updateStatusOrder = async (req, res) => {
             ));
         }
         
-        const newStatus = req.body;
 
         const order = await Order.findByIdAndUpdate(
             orderId,
-            {
-                status: newStatus
-            }
+            req.body
         );
 
         return res.status(200).json(ApiResponse.succes(
