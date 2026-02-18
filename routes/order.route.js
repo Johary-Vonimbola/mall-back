@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 router.post("", orderController.save);
+router.get("/:shopId/orders", orderController.getByShop);
 router.get("/:shopId/:clientId", orderController.getAll);
 router.get("/:orderId", orderController.getById);
 router.put("/:orderId", orderController.updateStatusOrder);
