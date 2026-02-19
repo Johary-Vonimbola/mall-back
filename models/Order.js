@@ -30,6 +30,15 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: STATUS_ORDER_ENUM,
         required: true
+    },
+    contact : {
+        type: String
+    },
+    address : {
+        type: String
+    },
+    email : {
+        type: String
     }
 }, { timestamps: true });
 
