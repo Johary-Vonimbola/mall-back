@@ -4,18 +4,21 @@ const { STATUS_ORDER } = require('../data/Status');
 const OrderDetail = require('../models/OrderDetail');
 const ApiResponse = require('../utils/ApiResponse');
 
+
 const save = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
+
     try {
-        if(!req.body){
-            session.abortTransaction();
-            return res.status(500).json(ApiResponse.error(
-                500,
+        if (!req.body) {
+            await session.abortTransaction();
+            return res.status(400).json(ApiResponse.error(
+                400,
                 'Error when saving the order',
                 ['No body provided']
             ));
         }
+
         const cart = req.body;
 
         const order = new Order({
@@ -27,48 +30,42 @@ const save = async (req, res) => {
             status: STATUS_ORDER.UNPAID
         });
 
-        await order.save();
+        await order.save({ session });
 
-        const orderDetails = [];
+        const orderDetails = cart.details.map(detail => ({
+            orderId: order._id,
+            quantity: detail.quantity,
+            price: detail.price,
+            productId: detail.productId,
+            productName: detail.productName,
+            productUom: detail.productUom,
+            productUomId: detail.productUomId,
+            productPicture: detail.productPicture,
+            productCategory: detail.productCategory,
+            productCategoryId: detail.productCategoryId
+        }));
 
-        cart.details.forEach(detail => {
-            orderDetails.push(
-                new OrderDetail({
-                    orderId: order._id,
-                    quantity: detail.quantity,
-                    price: detail.price,
-                    productId: detail.productId,
-                    productName: detail.productName,
-                    productUom: detail.productUom,
-                    productUomId: detail.productUomId,
-                    productPicture: detail.productPicture,
-                    productCategory: detail.productCategory,
-                    productCategoryId: detail.productCategoryId
-                })
-            );
-        });
+        await OrderDetail.insertMany(orderDetails, { session });
 
-        await OrderDetail.insertMany(orderDetails);
+        await session.commitTransaction();
 
-        return res.status(200).json(ApiResponse.succes(
-            200,
+        return res.status(201).json(ApiResponse.succes(
+            201,
             'Order created successfully',
-            {
-                order: order,
-                details: orderDetails
-            }
+            { order }
         ));
+
     } catch (err) {
-        session.abortTransaction();
+        await session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error creating order',
             [err.message]
         ));
-    } finally{
+    } finally {
         session.endSession();
     }
-}
+};
 
 const getAll = async (req, res) => {
     try {
@@ -133,7 +130,7 @@ const getByShop = async (req, res) => {
 
 const getById = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const orderId = req.params.id;
         
         if (!orderId) {
             return res.status(400).json(ApiResponse.error(
