@@ -3,7 +3,11 @@ const ApiResponse = require('../utils/ApiResponse');
 
 const getAll = async (req, res) => {
     try {
-        const productCategories = await ProductCategory.find();
+        const { shopId } = req.params;
+
+        const productCategories = await ProductCategory.find({
+            shopId: shopId
+        });
 
         return res.status(200).json(ApiResponse.succes(
             200,
