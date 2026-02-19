@@ -98,6 +98,36 @@ const getAll = async (req, res) => {
     }
 }
 
+const getByShop = async (req, res) => {
+    try {
+        const { shopId } = req.params;
+
+        if(!shopId){
+            return res.status(500).json(ApiResponse.error(
+                500,
+                'Error when retrieving the order',
+                ['No body provided (Shop Id)']
+            ));
+        }
+
+        const orders = await Order.find({
+            shopId : shopId
+        }).sort({ date: -1 });
+
+        return res.status(200).json(ApiResponse.succes(
+            200,
+            'Orders record(s)',
+            orders
+        ));
+    } catch (err) {
+        return res.status(500).json(ApiResponse.error(
+            500,
+            'Error retrieving orders',
+            [err.message]
+        ));
+    }
+}
+
 const getById = async (req, res) => {
     try {
         const orderId = req.params.id;
@@ -153,13 +183,10 @@ const updateStatusOrder = async (req, res) => {
             ));
         }
         
-        const newStatus = req.body;
 
         const order = await Order.findByIdAndUpdate(
             orderId,
-            {
-                status: newStatus
-            }
+            req.body
         );
 
         return res.status(200).json(ApiResponse.succes(
@@ -181,3 +208,4 @@ module.exports.save = save
 module.exports.getAll = getAll
 module.exports.getById = getById
 module.exports.updateStatusOrder = updateStatusOrder
+module.exports.getByShop = getByShop;
