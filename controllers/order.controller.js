@@ -130,7 +130,7 @@ const getByShop = async (req, res) => {
 
 const getById = async (req, res) => {
     try {
-        const orderId = req.params.id;
+        const orderId = req.params.orderId;
         
         if (!orderId) {
             return res.status(400).json(ApiResponse.error(
