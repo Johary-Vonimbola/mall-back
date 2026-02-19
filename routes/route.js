@@ -11,6 +11,7 @@ const shopRentRouter = require('./shopRent.route');
 const stockMoveRouter = require('./stockMove.route');
 const cartRouter = require('./cart.route');
 const orderRouter = require('./order.route');
+const paymentRouter = require('./payment.route');
 
 const router = express.Router();
 
@@ -30,5 +31,6 @@ router.use('/product-categories', productCategoryRouter);
 router.use('/stock-moves', stockMoveRouter);
 router.use('/cart', cartRouter);
 router.use('/orders', orderRouter);
+router.use('/payment', paymentRouter);
 
 module.exports = router;
