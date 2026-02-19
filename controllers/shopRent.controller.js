@@ -136,7 +136,12 @@ const save = async (req, res) => {
 };
 
 const updateShopRent = async (id, data, session) => {
-    return await ShopRent.findByIdAndUpdate(id, data, { new: true }).session(session)
+    try{
+        return await ShopRent.findByIdAndUpdate(id, data, { new: true }).session(session)
+    }catch(err){
+        session.abortTransaction();
+        throw err;
+    }
 };
 
 
@@ -229,6 +234,8 @@ const update = async (req, res) => {
 };
 
 const deactivate = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         const { id } = req.params;
 
@@ -240,9 +247,10 @@ const deactivate = async (req, res) => {
             ));
         }
 
-        const shopRent = await updateShopRent(id, { isActive: false });
+        const shopRent = await updateShopRent(id, { isActive: false }, session);
 
         if (!shopRent) {
+            session.abortTransaction();
             return res.status(404).json(ApiResponse.error(
                 404,
                 'Shop rent not found',
@@ -250,6 +258,7 @@ const deactivate = async (req, res) => {
             ));
         }
 
+        session.commitTransaction();
         return res.status(200).json(ApiResponse.succes(
             200,
             'Shop rent deactivated',
@@ -257,19 +266,25 @@ const deactivate = async (req, res) => {
         ));
 
     } catch (err) {
+        session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error deactivating shop rent',
             [err.message]
         ));
+    }finally{
+        session.endSession();
     }
 };
 
 const activate = async(req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         const { id } = req.params;
 
         if (!id) {
+            session.abortTransaction();
             return res.status(400).json(ApiResponse.error(
                 400,
                 'Error activating shop rent',
@@ -277,17 +292,18 @@ const activate = async(req, res) => {
             ));
         }
 
-        const shopRent = await updateShopRent(id, { isActive: true });
-        await ShopRent.updateMany({ shopId:  shopRent.shopId}, {isActive: false});
+        const shopRent = await updateShopRent(id, { isActive: true }, session);
+        await ShopRent.updateMany({ _id:  {$ne: shopRent._id}}, {$set: {isActive: false}}).session(session);
 
         if (!shopRent) {
+            session.abortTransaction();
             return res.status(404).json(ApiResponse.error(
                 404,
                 'Shop rent not found',
                 ['Shop rent does not exist']
             ));
         }
-
+        session.commitTransaction();
         return res.status(200).json(ApiResponse.succes(
             200,
             'Shop rent activated',
@@ -295,11 +311,14 @@ const activate = async(req, res) => {
         ));
 
     } catch (err) {
+        session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error activating shop rent',
             [err.message]
         ));
+    } finally{
+        session.endSession();
     }
 };
 
