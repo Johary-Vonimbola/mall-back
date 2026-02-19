@@ -77,8 +77,6 @@ const handleWebhook = async (req, res) => {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-
-    // 🎯 Payment Success
     if (event.type === 'payment_intent.succeeded') {
 
         const paymentIntent = event.data.object;
@@ -86,7 +84,7 @@ const handleWebhook = async (req, res) => {
         const orderId = paymentIntent.metadata.orderId;
 
         await Order.findByIdAndUpdate(orderId, {
-            status: STATUS_ORDER.IN_PROGRESS_DELIVERY
+            status: STATUS_ORDER.PAID
         });
     }
 
