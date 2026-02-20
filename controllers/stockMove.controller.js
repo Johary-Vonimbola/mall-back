@@ -4,35 +4,65 @@ const StockMove = require('../models/StockMove');
 const StockMoveLine = require('../models/StockMoveLine');
 const ApiResponse = require('../utils/ApiResponse');
 
-const updateStockProduct = async (productId, quantity, type) => {
-    if(type === 'OUT') quantity *= -1;
-    await Product.findByIdAndUpdate(productId, {
-        $inc: { stock: quantity }
-    }, { new: true });
+
+const updateStockProduct = async (productId, quantity, type, session) => {
+
+    if(type === 'IN'){
+        await Product.updateOne(
+            { _id: productId },
+            {
+                $inc: {
+                    stock: quantity
+                }
+            },
+            { session }
+        );
+    }
+
+    if(type === 'OUT'){
+        await Product.updateOne(
+            { _id: productId },
+            {
+                $inc: {
+                    stock: -quantity,
+                    reservedStock: -quantity
+                }
+            },
+            { session }
+        );
+    }
 }
 
-const saveStockMove = async (date, shopId, description='', lines) => {
+const saveStockMove = async (date, shopId, description='', lines, session) => {
+
     const stockMove = new StockMove({ shopId, date, description });
-    await stockMove.save();
+    await stockMove.save({ session });
 
-    lines.forEach(line => {
+    for(const line of lines){
         line.parentId = stockMove._id;
-    });
+    }
 
-    await StockMoveLine.insertMany(lines);
+    await StockMoveLine.insertMany(lines, { session });
 
-    lines.forEach(async line => {
-        await updateStockProduct(line.productId, line.quantity, line.type);
-    });
+    for(const line of lines){
+        await updateStockProduct(
+            line.productId,
+            line.quantity,
+            line.type,
+            session
+        );
+    }
+
     return stockMove;
 }
+
 
 const save = async(req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try{
         if(!req.body){
-            session.abortTransaction();
+            await session.abortTransaction();
             return res.status(500).json(ApiResponse.error(
                 500,
                 'Error when saving the stock move',
@@ -41,9 +71,9 @@ const save = async(req, res) => {
         }
         const { date, shopId, lines, description='' } = req.body;
 
-        const stockMove = await saveStockMove(date, shopId, description, lines);
+        const stockMove = await saveStockMove(date, shopId, description, lines, session);
 
-        session.commitTransaction();
+        await session.commitTransaction();
         return res.status(200).json(ApiResponse.succes(
             200,
             'Stock move created successfully',
@@ -53,7 +83,7 @@ const save = async(req, res) => {
             }
         ));
     }catch(err){
-        session.abortTransaction();
+        await session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error when saving the stock move',
@@ -170,10 +200,10 @@ const configThreshold = async(req, res) => {
         const thresholds = req.body;
         const results = [];
         for(let t of thresholds){
-            const product = await Product.findByIdAndUpdate(t.productId, { stockThreshold: t.threshold }, { new: true });
+            const product = await Product.findByIdAndUpdate(t.productId, { stockThreshold: t.threshold }, { new: true }).session(session);
 
             if (!product) {
-                session.abortTransaction();
+                await session.abortTransaction();
                 return res.status(404).json(ApiResponse.error(
                     404,
                     'Product not found',
@@ -183,7 +213,7 @@ const configThreshold = async(req, res) => {
             results.push(product);
         }
 
-        session.commitTransaction();
+        await session.commitTransaction();
         return res.status(200).json(ApiResponse.succes(
             200,
             'Thresholds configuration done',
@@ -191,7 +221,7 @@ const configThreshold = async(req, res) => {
         ));
 
     } catch (err) {
-        session.abortTransaction();
+        await session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error updating product',

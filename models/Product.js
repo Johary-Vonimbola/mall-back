@@ -43,6 +43,10 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    reservedStock: {
+        type: Number,
+        default: 0
+    },
     stockThreshold: {
         type: Number,
         default: 0

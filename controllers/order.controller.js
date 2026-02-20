@@ -3,23 +3,58 @@ const Order = require('../models/Order');
 const { STATUS_ORDER } = require('../data/Status');
 const OrderDetail = require('../models/OrderDetail');
 const ApiResponse = require('../utils/ApiResponse');
-
+const Product = require('../models/Product');
 
 const save = async (req, res) => {
+
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        if (!req.body) {
-            await session.abortTransaction();
-            return res.status(400).json(ApiResponse.error(
-                400,
-                'Error when saving the order',
-                ['No body provided']
-            ));
-        }
 
         const cart = req.body;
+
+        const errors = [];
+
+        for (const detail of cart.details) {
+            const productId = new mongoose.Types.ObjectId(detail.productId);
+
+            const updated = await Product.findOneAndUpdate(
+                {
+                    _id: productId,
+                    $expr: {
+                        $gte: [
+                            { $subtract: ["$stock", "$reservedStock"] },
+                            detail.quantity
+                        ]
+                    }
+                },
+                {
+                    $inc: { reservedStock: detail.quantity }
+                },
+                {
+                    new: true,
+                    session
+                }
+            );
+
+            if (!updated) {
+                const product = await Product.findById(productId).session(session);
+                const availableStock = product.stock - product.reservedStock;
+                errors.push(
+                    `Insufficient stock for ${detail.productName}, available: ${availableStock}`
+                );
+            }
+        }
+
+        if (errors.length > 0) {
+            await session.abortTransaction();
+            return res.status(409).json(ApiResponse.error(
+                409, 
+                'Insufficient stock', 
+                errors
+            ));
+        }
 
         const order = new Order({
             date: new Date(),
@@ -27,7 +62,7 @@ const save = async (req, res) => {
             shopId: cart.shopId,
             total: cart.total,
             nbArticles: cart.nbArticles,
-            status: STATUS_ORDER.UNPAID
+            status: STATUS_ORDER.PENDING
         });
 
         await order.save({ session });
@@ -49,23 +84,23 @@ const save = async (req, res) => {
 
         await session.commitTransaction();
 
-        return res.status(201).json(ApiResponse.succes(
-            201,
-            'Order created successfully',
+        return res.status(201).json( ApiResponse.succes(
+            201, 
+            'Order created successfully', 
             { order }
-        ));
+        )
+        );
 
     } catch (err) {
         await session.abortTransaction();
-        return res.status(500).json(ApiResponse.error(
-            500,
-            'Error creating order',
-            [err.message]
-        ));
+        return res.status(500).json(
+            ApiResponse.error(500, 'Error creating order', [err.message])
+        );
     } finally {
         session.endSession();
     }
-};
+}
+
 
 const getAll = async (req, res) => {
     try {
