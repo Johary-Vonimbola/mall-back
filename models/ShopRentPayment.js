@@ -35,6 +35,9 @@ const shopRentPaymentSchema = new mongoose.Schema({
         type: String,
         enum: ["PAID", "UNPAID"],
         default: "PAID"
+    },
+    dueDate: {
+        type: Date
     }
 }, {
     timestamps: true

@@ -79,7 +79,7 @@ const save = async (req, res) => {
         const shopId = req.body.shopId;
         const frequency = FREQUENCY_MAP[req.body.frequencyString];
         if(!frequency){
-            session.abortTransaction();
+            await session.abortTransaction();
             return res.status(500).json(ApiResponse.error(
                 500,
                 'Error creating shop rent',
@@ -110,13 +110,14 @@ const save = async (req, res) => {
                 month: currentDate.getMonth() + 1,
                 amount: 0,
                 paidAt: null,
-                status: "UNPAID"
+                status: "UNPAID",
+                dueDate: new Date(currentDate.getFullYear(), currentDate.getMonth(), shopRent.dueDate)
             });
             currentDate.setMonth(currentDate.getMonth() + frequency);
         }
         await ShopRentPayment.insertMany(payments, {session});
 
-        session.commitTransaction();
+        await session.commitTransaction();
         return res.status(201).json(ApiResponse.succes(
             201,
             'Shop rent created',
@@ -124,7 +125,7 @@ const save = async (req, res) => {
         ));
 
     } catch (err) {
-        session.abortTransaction();
+        await session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error creating shop rent',
@@ -139,7 +140,6 @@ const updateShopRent = async (id, data, session) => {
     try{
         return await ShopRent.findByIdAndUpdate(id, data, { new: true }).session(session)
     }catch(err){
-        session.abortTransaction();
         throw err;
     }
 };
@@ -152,7 +152,7 @@ const update = async (req, res) => {
         const { id } = req.params;
 
         if (!id) {
-            session.abortTransaction();
+            await session.abortTransaction();
             return res.status(400).json(ApiResponse.error(
                 400,
                 'Error updating shop rent',
@@ -161,7 +161,7 @@ const update = async (req, res) => {
         }
 
         if (!req.body) {
-            session.abortTransaction();
+            await session.abortTransaction();
             return res.status(400).json(ApiResponse.error(
                 400,
                 'Error updating shop rent',
@@ -172,7 +172,7 @@ const update = async (req, res) => {
         const shopRent = await updateShopRent(id, req.body, session);
 
         if (!shopRent) {
-            session.abortTransaction();
+            await session.abortTransaction();
             return res.status(404).json(ApiResponse.error(
                 404,
                 'Shop rent not found',
@@ -205,7 +205,8 @@ const update = async (req, res) => {
                     month: current.getMonth() + 1,
                     amount: shopRent.amount,
                     status: "UNPAID",
-                    paidAt: null
+                    paidAt: null,
+                    dueDate: new Date(current.getFullYear(), current.getMonth(), shopRent.dueDate)
                 });
 
                 current.setMonth(current.getMonth() + frequency);
@@ -214,7 +215,7 @@ const update = async (req, res) => {
                 await ShopRentPayment.insertMany(payments, { session });
             }
         }
-        session.commitTransaction();
+        await session.commitTransaction();
         return res.status(200).json(ApiResponse.succes(
             200,
             'Shop rent updated',
@@ -222,7 +223,7 @@ const update = async (req, res) => {
         ));
 
     } catch (err) {
-        session.abortTransaction();
+        await session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error updating shop rent',
@@ -250,7 +251,7 @@ const deactivate = async (req, res) => {
         const shopRent = await updateShopRent(id, { isActive: false }, session);
 
         if (!shopRent) {
-            session.abortTransaction();
+            await session.abortTransaction();
             return res.status(404).json(ApiResponse.error(
                 404,
                 'Shop rent not found',
@@ -258,7 +259,7 @@ const deactivate = async (req, res) => {
             ));
         }
 
-        session.commitTransaction();
+        await session.commitTransaction();
         return res.status(200).json(ApiResponse.succes(
             200,
             'Shop rent deactivated',
@@ -266,7 +267,7 @@ const deactivate = async (req, res) => {
         ));
 
     } catch (err) {
-        session.abortTransaction();
+        await session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error deactivating shop rent',
@@ -284,7 +285,7 @@ const activate = async(req, res) => {
         const { id } = req.params;
 
         if (!id) {
-            session.abortTransaction();
+            await session.abortTransaction();
             return res.status(400).json(ApiResponse.error(
                 400,
                 'Error activating shop rent',
@@ -293,17 +294,17 @@ const activate = async(req, res) => {
         }
 
         const shopRent = await updateShopRent(id, { isActive: true }, session);
-        await ShopRent.updateMany({ _id:  {$ne: shopRent._id}}, {$set: {isActive: false}}).session(session);
+        await ShopRent.updateMany({ _id:  {$ne: shopRent._id}, shopId: shopRent.shopId}, {$set: {isActive: false}}).session(session);
 
         if (!shopRent) {
-            session.abortTransaction();
+            await session.abortTransaction();
             return res.status(404).json(ApiResponse.error(
                 404,
                 'Shop rent not found',
                 ['Shop rent does not exist']
             ));
         }
-        session.commitTransaction();
+        await session.commitTransaction();
         return res.status(200).json(ApiResponse.succes(
             200,
             'Shop rent activated',
@@ -311,7 +312,7 @@ const activate = async(req, res) => {
         ));
 
     } catch (err) {
-        session.abortTransaction();
+        await session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error activating shop rent',
