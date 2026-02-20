@@ -235,7 +235,11 @@ const activate = async (req, res) => {
 
         const product = await Product.findByIdAndUpdate(
             id,
-            { isActive: true },
+            { 
+                isActive: true,
+                stock: 0,
+                reservedStock: 0, 
+            },
             { new: true }
         );
 
@@ -303,6 +307,7 @@ const deactivate = async (req, res) => {
         ));
     }
 };
+
 
 module.exports.save = save;
 module.exports.getAll = getAll;
