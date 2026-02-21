@@ -62,7 +62,7 @@ const save = async (req, res) => {
             shopId: cart.shopId,
             total: cart.total,
             nbArticles: cart.nbArticles,
-            status: STATUS_ORDER.PENDING
+            status: STATUS_ORDER.UNPAID
         });
 
         await order.save({ session });
@@ -200,6 +200,9 @@ const getById = async (req, res) => {
 
 const updateStatusOrder = async (req, res) => {
     try {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        
         const { orderId } = req.params;
 
         if (!orderId) {
@@ -218,11 +221,33 @@ const updateStatusOrder = async (req, res) => {
             ));
         }
         
-
         const order = await Order.findByIdAndUpdate(
             orderId,
             req.body
-        );
+        ).session(session);
+
+        if (req.body.status === STATUS_ORDER.CANCELED) {
+            const orderDetails = await OrderDetail.find({
+                orderId: orderId
+            }).session(session);
+
+            for (const detail of orderDetails) {
+                await Product.findOneAndUpdate(
+                    {
+                        _id: detail.productId
+                    },
+                    {
+                        $inc: { reservedStock: -detail.quantity }
+                    },
+                    {
+                        new: true,
+                        session
+                    }
+                );
+            }
+        }
+
+        await session.commitTransaction();
 
         return res.status(200).json(ApiResponse.succes(
             200,
@@ -231,11 +256,14 @@ const updateStatusOrder = async (req, res) => {
         ));
 
     } catch (err) {
+        await session.abortTransaction();
         return res.status(500).json(ApiResponse.error(
             500,
             'Error updating status order',
             [err.message]
         ));
+    } finally {
+        session.endSession();
     }
 }
 

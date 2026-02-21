@@ -236,9 +236,7 @@ const activate = async (req, res) => {
         const product = await Product.findByIdAndUpdate(
             id,
             { 
-                isActive: true,
-                stock: 0,
-                reservedStock: 0, 
+                isActive: true
             },
             { new: true }
         );
