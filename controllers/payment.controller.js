@@ -1,7 +1,10 @@
 const Stripe = require('stripe');
 const Order = require('../models/Order');
+const OrderDetail = require('../models/OrderDetail');
 const { STATUS_ORDER } = require('../data/Status');
 const ApiResponse = require('../utils/ApiResponse');
+const { saveStockMove } = require('./stockMove.controller');
+const { default: mongoose } = require('mongoose');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -58,21 +61,19 @@ const createPaymentIntent = async (req, res) => {
 // ==============================
 // STRIPE WEBHOOK
 // ==============================
-const handleWebhook = async (req, res) => {    
+const handleWebhook = async (req, res) => {
+
     const sig = req.headers['stripe-signature'];
 
     let event;
 
     try {
-
         event = stripe.webhooks.constructEvent(
             req.body,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
-
     } catch (err) {
-
         console.log("❌ Webhook signature failed");
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
@@ -80,17 +81,49 @@ const handleWebhook = async (req, res) => {
     if (event.type === 'payment_intent.succeeded') {
 
         const paymentIntent = event.data.object;
-
         const orderId = paymentIntent.metadata.orderId;
 
-        await Order.findByIdAndUpdate(orderId, {
-            status: STATUS_ORDER.PAID
-        });
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
+        try {
+            const order = await Order.findByIdAndUpdate(
+                orderId,
+                { status: STATUS_ORDER.PAID },
+                { session }
+            );
+
+            const orderDetails = await OrderDetail.find({
+                orderId: orderId
+            }).session(session);
+
+            const stockLines = orderDetails.map(detail => ({
+                type: 'OUT',
+                productId: detail.productId,
+                productName: detail.productName,
+                quantity: detail.quantity
+            }));
+
+            await saveStockMove(
+                new Date(),
+                order.shopId,
+                `Payment Order ${orderId}`,
+                stockLines,
+                session
+            );
+
+            await session.commitTransaction();
+
+        } catch (err) {
+            await session.abortTransaction();
+            console.log("❌ Stock update failed", err);
+        } finally {
+            session.endSession();
+        }
     }
 
     res.json({ received: true });
 };
-
 
 module.exports = {
     createPaymentIntent,
