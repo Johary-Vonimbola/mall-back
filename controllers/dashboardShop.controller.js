@@ -18,64 +18,53 @@ const getDashboardShop = async (req, res) => {
             ));
         }
 
-        const currentDate = new Date();
-
-        const startOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const startOfNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-        const startOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-
         const VALID_STATUS = [
             STATUS_ORDER.PAID,
             STATUS_ORDER.IN_PROGRESS_DELIVERY,
             STATUS_ORDER.DELIVERED
         ];
 
+        const currentDate = new Date();
+
+        const startOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const startOfNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        const startOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+
         // ==========================
-        // CHIFFRE D'AFFAIRE
+        // CHIFFRE D'AFFAIRE MOIS ACTUEL
         // ==========================
         const currentMonthSales = await Order.aggregate([
             {
                 $match: {
                     shopId: new mongoose.Types.ObjectId(shopId),
                     status: { $in: VALID_STATUS },
-                    date: {
-                        $gte: startOfCurrentMonth,
-                        $lt: startOfNextMonth
-                    }
+                    date: { $gte: startOfCurrentMonth, $lt: startOfNextMonth }
                 }
             },
-            {
-                $group: {
-                    _id: null,
-                    total: { $sum: "$total" }
-                }
-            }
+            { $group: { _id: null, total: { $sum: "$total" } } }
         ]);
 
+        // ==========================
+        // MOIS PRECEDENT
+        // ==========================
         const previousMonthSales = await Order.aggregate([
             {
                 $match: {
                     shopId: new mongoose.Types.ObjectId(shopId),
                     status: { $in: VALID_STATUS },
-                    date: {
-                        $gte: startOfPreviousMonth,
-                        $lt: startOfCurrentMonth
-                    }
+                    date: { $gte: startOfPreviousMonth, $lt: startOfCurrentMonth }
                 }
             },
-            {
-                $group: {
-                    _id: null,
-                    total: { $sum: "$total" }
-                }
-            }
+            { $group: { _id: null, total: { $sum: "$total" } } }
         ]);
 
         const currentCA = currentMonthSales[0]?.total || 0;
         const previousCA = previousMonthSales[0]?.total || 0;
 
-        const salesEvolution = previousCA === 0 ? 100 :
-            ((currentCA - previousCA) / previousCA) * 100;
+        const salesEvolution =
+            previousCA === 0
+                ? (currentCA > 0 ? 100 : 0)
+                : ((currentCA - previousCA) / previousCA) * 100;
 
         // ==========================
         // PRODUIT PLUS VENDU
@@ -94,10 +83,7 @@ const getDashboardShop = async (req, res) => {
                 $match: {
                     "order.shopId": new mongoose.Types.ObjectId(shopId),
                     "order.status": { $in: VALID_STATUS },
-                    "order.date": {
-                        $gte: startOfCurrentMonth,
-                        $lt: startOfNextMonth
-                    }
+                    "order.date": { $gte: startOfCurrentMonth, $lt: startOfNextMonth }
                 }
             },
             {
@@ -110,6 +96,42 @@ const getDashboardShop = async (req, res) => {
             { $sort: { quantity: -1 } },
             { $limit: 1 }
         ]);
+
+        // ==========================
+        // VENTES PAR MOIS (ANNEE ACTUELLE)
+        // ==========================
+        const startOfYear = new Date(currentDate.getFullYear(), 0, 1);
+        const endOfYear = new Date(currentDate.getFullYear() + 1, 0, 1);
+
+        const sales = await Order.aggregate([
+            {
+                $match: {
+                    shopId: new mongoose.Types.ObjectId(shopId),
+                    status: { $in: VALID_STATUS },
+                    date: { $gte: startOfYear, $lt: endOfYear }
+                }
+            },
+            {
+                $group: {
+                    _id: { month: { $month: "$date" } },
+                    total: { $sum: "$total" }
+                }
+            }
+        ]);
+
+        // 🔥 CREER 12 MOIS AVEC 0
+        let salesByMonth = [];
+
+        for (let i = 1; i <= 12; i++) {
+
+            const found = sales.find(s => s._id.month === i);
+
+            salesByMonth.push({
+                month: i,
+                total: found ? found.total : 0
+            });
+
+        }
 
         // ==========================
         // LOYER
@@ -135,7 +157,8 @@ const getDashboardShop = async (req, res) => {
                 evolutionCA: salesEvolution,
                 bestProduct: bestProduct[0] || null,
                 rent: rentAmount,
-                profit: profit
+                profit: profit,
+                salesByMonth: salesByMonth
             }
         ));
 
