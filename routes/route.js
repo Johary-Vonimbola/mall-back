@@ -14,6 +14,7 @@ const orderRouter = require('./order.route');
 const paymentRouter = require('./payment.route');
 const rentPaymentRouter = require('./shopRentPayment.route');
 const adminDashboardRouter = require('./dashboard.route');
+const dashboardShopRouter = require('./dashboardShop.route');
 
 const router = express.Router();
 
@@ -38,4 +39,5 @@ router.use('/payment', paymentRouter);
 router.use('/rent-payments', rentPaymentRouter);
 
 router.use('/dashboard', adminDashboardRouter);
+router.use('/dashboard-shop', dashboardShopRouter);
 module.exports = router;
