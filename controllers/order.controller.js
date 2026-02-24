@@ -199,10 +199,11 @@ const getById = async (req, res) => {
 };
 
 const updateStatusOrder = async (req, res) => {
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        
         const { orderId } = req.params;
 
         if (!orderId) {
