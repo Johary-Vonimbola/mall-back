@@ -70,6 +70,11 @@ const save = async (req, res) => {
             ));
         }
         const data = {...req.body, picture: req.file?.filename ?? ''}
+
+        if (req.file) {
+            data.picture = `${PathPictureProduct}/${req.file.filename}`;
+        }
+
         const product = new Product(data);
         await product.save();
 
