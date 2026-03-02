@@ -11,12 +11,15 @@ const getRentsByYear = async (req, res) => {
                 ['No year provided']
             ));
         };
-        const rents = await ShopRentPayment.find({ shopId, year }).populate('shopId').sort({ month: 1 });
+        const rents = await ShopRentPayment.find({ shopId, year }).populate('shopId').populate("rentConfigId").sort({ month: 1 });
 
+        const filtered = rents.filter(p => {
+            return p.rentConfigId && p.rentConfigId.isActive === true}
+        );
         return res.status(200).json(ApiResponse.succes(
             200,
             'Rents record(s)',
-            rents
+            filtered
         ));
     }catch(err){
         return res.status(500).json(ApiResponse.error(
@@ -160,16 +163,11 @@ const createRentPayment = async (req, res) => {
 const getAll = async (req, res) => {
     try{
         const rentPayments = await ShopRentPayment.find()
-            .populate("shopId")
-            .populate("rentConfigId");
-
-        const filtered = rentPayments.filter(p => 
-            p.rentConfigId && p.rentConfigId.isActive === true
-        );
+            .populate("shopId");
         return res.status(200).json(ApiResponse.succes(
             200,
             "Shop rent payments record(s)",
-            filtered
+            rentPayments
         ));
     }catch(err){
         return res.status(500).json(ApiResponse.error(
