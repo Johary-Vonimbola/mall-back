@@ -73,10 +73,12 @@ const save = async (req, res) => {
                 ['No information provided']
             ));
         }
-        const data = {...req.body, picture: req.file?.filename ?? ''}
+
+        const updateData = { ...req.body };
 
         if (req.file) {
-            data.picture = `${PathPictureProduct}/${req.file.filename}`;
+            const result = await uploadToCloudinary( PathPictureProduct , req.file.buffer);
+            updateData.picture = result.secure_url;            
         }
 
         const product = new Product(data);

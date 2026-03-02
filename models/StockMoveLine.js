@@ -21,25 +21,21 @@ const stockMoveLineSchema = new mongoose.Schema({
         required: true
     },
     productUom: {
-        type: String,
-        required: true
+        type: String
     },
     productUomId: {
         type: mongoose.Types.ObjectId,
-        ref: 'uom',
-        required: true
+        ref: 'uom'
     },
     productPicture: {
         type: String
     },
     productCategory: {
-        type: String,
-        required: true
+        type: String
     },
     productCategoryId: {
         type: mongoose.Types.ObjectId,
-        ref: 'product_category',
-        required: true
+        ref: 'product_category'
     },
     quantity: {
         type: Number,
