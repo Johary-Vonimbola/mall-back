@@ -64,7 +64,7 @@ const update = async (req, res) => {
             ));
         }
 
-        const result = await ShopRentPayment.findByIdAndUpdate(rentId, req.body, {new: true});
+        const result = await ShopRentPayment.findByIdAndUpdate(rentId, {...req.body, paidAt: new Date() }, {new: true});
 
         return res.status(200).json(ApiResponse.succes(
             200,
