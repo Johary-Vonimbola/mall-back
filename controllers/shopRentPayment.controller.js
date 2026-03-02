@@ -159,7 +159,18 @@ const createRentPayment = async (req, res) => {
 
 const getAll = async (req, res) => {
     try{
-        const rentPayments = await ShopRentPayment.find().populate("shopId");
+        const rentPayments = await ShopRentPayment.aggregate([
+            {
+                $lookup: {
+                    from: "shop_rents",
+                    localField: "rentConfigId",
+                    foreignField: "_id",
+                    as: "rentConfig"
+                }
+            },
+            { $unwind: "$rentConfig" },
+            { $match: { "rentConfig.isActive": true } }
+        ]);
         return res.status(200).json(ApiResponse.succes(
             200,
             "Shop rent payments record(s)",

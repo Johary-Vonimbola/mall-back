@@ -108,7 +108,7 @@ const save = async (req, res) => {
                 rentConfigId: shopRent._id,
                 year: currentDate.getFullYear(),
                 month: currentDate.getMonth() + 1,
-                amount: 0,
+                amount: req.body.amount,
                 paidAt: null,
                 status: "UNPAID",
                 dueDate: new Date(currentDate.getFullYear(), currentDate.getMonth(), shopRent.dueDate)
