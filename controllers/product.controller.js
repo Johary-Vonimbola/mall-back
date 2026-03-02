@@ -4,6 +4,7 @@ const { PathPictureProduct } = require('../data/PathUpload');
 const Cart = require('../models/Cart');
 const OrderDetail = require('../models/OrderDetail');
 const StockMoveLine = require('../models/StockMoveLine');
+const uploadToCloudinary = require('../utils/cloudinaryUpload');
 
 const getAll = async (req, res) => {
     try {
@@ -97,8 +98,33 @@ const save = async (req, res) => {
 };
 
 
+// const upload = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+
+//         if (!id) {
+//             return res.status(400).json(ApiResponse.error(
+//                 400,
+//                 'Error updating product',
+//                 ['No id provided']
+//             ));
+//         }
+
+//         const updateData = { ...req.body };
+
+//         if (req.file) {
+//             updateData.picture = `${PathPictureProduct}/${req.file.filename}`;
+//         }
+
+//         const product = await Product.findByIdAndUpdate(
+//             id,
+//             updateData,
+//             { new: true }
+//         );
+
 const upload = async (req, res) => {
     try {
+
         const { id } = req.params;
 
         if (!id) {
@@ -112,7 +138,8 @@ const upload = async (req, res) => {
         const updateData = { ...req.body };
 
         if (req.file) {
-            updateData.picture = `${PathPictureProduct}/${req.file.filename}`;
+            const result = await uploadToCloudinary( PathPictureProduct , req.file.buffer);
+            updateData.picture = result.secure_url;            
         }
 
         const product = await Product.findByIdAndUpdate(

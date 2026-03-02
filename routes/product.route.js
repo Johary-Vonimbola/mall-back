@@ -2,9 +2,10 @@ const productController = require('../controllers/product.controller');
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authentication.middleware');
-const upload = require("../middlewares/upload.middleware");
+// const upload = require("../middlewares/upload.middleware");
 const { ROLE } = require('../data/Role');
 const productMiddleware = require('../middlewares/product.middleware');
+const upload = require('../middlewares/multerMemory.middleware');
 
 router.get("/:shopId", productController.getAll);
 router.get("/:shopId/:id", productController.getById);

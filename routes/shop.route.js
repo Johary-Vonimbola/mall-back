@@ -2,9 +2,10 @@ const shopController = require('../controllers/shop.controller');
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/authentication.middleware');
-const upload = require("../middlewares/upload.middleware");
+// const upload = require("../middlewares/upload.middleware");
 const { ROLE } = require('../data/Role');
 const { PathLogoShop } = require('../data/PathUpload');
+const upload = require('../middlewares/multerMemory.middleware');
 
 router.get("/", shopController.getAll);
 router.get("/:id", shopController.getById);

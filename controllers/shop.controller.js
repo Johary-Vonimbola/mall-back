@@ -5,6 +5,7 @@ const { ROLE } = require('../data/Role');
 const User = require('../models/User');
 const { default: mongoose } = require('mongoose');
 const ShopRent = require('../models/ShopRent');
+const uploadToCloudinary = require('../utils/cloudinaryUpload');
 
 const getAll = async (req, res) => {
     try {
@@ -149,7 +150,8 @@ const upload = async (req, res) => {
         const updateData = { ...req.body };
 
         if (req.file) {
-            updateData.logo = `${PathLogoShop}/${req.file.filename}`;
+            const result = await uploadToCloudinary( PathLogoShop , req.file.buffer);
+            updateData.logo = result.secure_url;            
         }
 
         const shop = await Shop.findByIdAndUpdate(
