@@ -1,5 +1,7 @@
+const Product = require('../models/Product');
 const ProductCategory = require('../models/ProductCategory');
 const ApiResponse = require('../utils/ApiResponse');
+const { updateProductAndSync } = require('./product.controller');
 
 const getAll = async (req, res) => {
     try {
@@ -116,6 +118,19 @@ const update = async (req, res) => {
             { new: true }
         );
 
+        const products = await Product.find({
+            categoryId: id
+        });
+
+        for (let i = 0; i < products.length; i++) {
+            const data = products[i].toObject();
+
+            data.category = productCategory.name;
+            data.categoryId = productCategory._id;
+
+            await updateProductAndSync(products[i]._id, data);
+        }
+
         if (!productCategory) {
             return res.status(404).json(ApiResponse.error(
                 404,
@@ -149,6 +164,18 @@ const remove = async (req, res) => {
                 400,
                 'Error deleting Product Category',
                 ['No id provided']
+            ));
+        }
+
+        const productByCategory = await Product.find({
+            categoryId: id
+        });
+
+        if (productByCategory.length > 0) {
+            return res.status(301).json(ApiResponse.error(
+                301,
+                'Product Category can not deleted',
+                ['Product Category exist in other collections (Product)']
             ));
         }
 

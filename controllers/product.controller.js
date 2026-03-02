@@ -1,6 +1,9 @@
 const Product = require('../models/Product');
 const ApiResponse = require('../utils/ApiResponse');
 const { PathPictureProduct } = require('../data/PathUpload');
+const Cart = require('../models/Cart');
+const OrderDetail = require('../models/OrderDetail');
+const StockMoveLine = require('../models/StockMoveLine');
 
 const getAll = async (req, res) => {
     try {
@@ -126,6 +129,38 @@ const upload = async (req, res) => {
             ));
         }
 
+        await Cart.updateMany(
+            { "details.productId": id },
+            {
+                $set: {
+                    "details.$[elem].productPicture": product.picture
+                }
+            },
+            {
+                arrayFilters: [
+                    { "elem.productId": id }
+                ]
+            }
+        );
+
+        await OrderDetail.updateMany(
+            { productId: id },
+            {
+                $set: {
+                    productPicture : product.picture
+                }
+            }
+        );
+
+        await StockMoveLine.updateMany(
+            { productId: id },
+            {
+                $set: {
+                    productPicture : product.picture
+                }
+            }
+        );
+
         return res.status(200).json(ApiResponse.succes(
             200,
             'Product updated',
@@ -141,6 +176,65 @@ const upload = async (req, res) => {
     }
 };
 
+const updateProductAndSync = async (id, data) => {
+
+    const product = await Product.findByIdAndUpdate(
+        id,
+        data,
+        { new: true }
+    );
+
+    if (!product) {
+        throw new Error('Product not found');
+    }
+
+    await Cart.updateMany(
+        { "details.productId": id },
+        {
+            $set: {
+                "details.$[elem].productName": product.name,
+                "details.$[elem].productUom": product.uom,
+                "details.$[elem].productUomId": product.uomId,
+                "details.$[elem].productPicture": product.picture,
+                "details.$[elem].productCategory": product.category,
+                "details.$[elem].productCategoryId": product.categoryId
+            }
+        },
+        {
+            arrayFilters: [{ "elem.productId": id }]
+        }
+    );
+
+    await OrderDetail.updateMany(
+        { productId: id },
+        {
+            $set: {
+                productName: product.name,
+                productUom: product.uom,
+                productUomId: product.uomId,
+                productPicture: product.picture,
+                productCategory: product.category,
+                productCategoryId: product.categoryId
+            }
+        }
+    );
+
+    await StockMoveLine.updateMany(
+        { productId: id },
+        {
+            $set: {
+                productName: product.name,
+                productUom: product.uom,
+                productUomId: product.uomId,
+                productPicture: product.picture,
+                productCategory: product.category,
+                productCategoryId: product.categoryId
+            }
+        }
+    );
+
+    return product;
+};
 
 const update = async (req, res) => {
     try {
@@ -162,15 +256,7 @@ const update = async (req, res) => {
             ));
         }
 
-        const product = await Product.findByIdAndUpdate(id, req.body, { new: true });
-
-        if (!product) {
-            return res.status(404).json(ApiResponse.error(
-                404,
-                'Product not found',
-                ['Product does not exist']
-            ));
-        }
+        const product = await this.updateProductAndSync(id, req.body);
 
         return res.status(200).json(ApiResponse.succes(
             200,
@@ -179,6 +265,14 @@ const update = async (req, res) => {
         ));
 
     } catch (err) {
+        if (err.message === 'Product not found') {
+            return res.status(404).json(ApiResponse.error(
+                404, 
+                'Product not found', 
+                ['Product does not exist']
+            ));
+        }
+
         return res.status(500).json(ApiResponse.error(
             500,
             'Error updating product',
@@ -320,3 +414,4 @@ module.exports.upload = upload;
 module.exports.remove = remove;
 module.exports.activate = activate;
 module.exports.deactivate = deactivate;
+module.exports.updateProductAndSync = updateProductAndSync;
