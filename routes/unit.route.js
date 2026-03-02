@@ -7,8 +7,8 @@ const { ROLE } = require('../data/Role');
 
 router.get("/", unitController.getAll);
 router.get("/:id", unitController.getById);
-router.post("/", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.ADMIN), unitController.save);
-router.put("/:id", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.ADMIN), unitController.update);
-router.delete("/:id", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.ADMIN), unitController.remove);
+router.post("/", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.SHOP), unitController.save);
+router.put("/:id", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.SHOP), unitController.update);
+router.delete("/:id", authMiddleware.authenticateToken, authMiddleware.authenticateRole(ROLE.SHOP), unitController.remove);
 
 module.exports = router;
