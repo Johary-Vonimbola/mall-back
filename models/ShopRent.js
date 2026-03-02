@@ -11,6 +11,9 @@ const shopRentSchema = new mongoose.Schema({
     shopName: {
         type: String
     },
+    shopLogo: {
+        type: String
+    },
     amount: {
         type: Number,
         required: true

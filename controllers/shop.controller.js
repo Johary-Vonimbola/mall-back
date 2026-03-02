@@ -4,6 +4,7 @@ const { PathLogoShop } = require('../data/PathUpload');
 const { ROLE } = require('../data/Role');
 const User = require('../models/User');
 const { default: mongoose } = require('mongoose');
+const ShopRent = require('../models/ShopRent');
 
 const getAll = async (req, res) => {
     try {
@@ -133,7 +134,6 @@ const save = async (req, res) => {
     }
 };
 
-
 const upload = async (req, res) => {
     try {
         const { id } = req.params;
@@ -166,6 +166,15 @@ const upload = async (req, res) => {
             ));
         }
 
+        await ShopRent.updateMany(
+            { shopId: id },
+            {
+                $set: {
+                    "shopLogo": shop.logo
+                }
+            }
+        );
+
         return res.status(200).json(ApiResponse.succes(
             200,
             'Shop updated',
@@ -181,6 +190,29 @@ const upload = async (req, res) => {
     }
 };
 
+const updateShopAndAsync = async (id, data) => {
+    const shop = await Shop.findByIdAndUpdate(
+        id, 
+        data, 
+        { new: true }
+    );
+
+    if (!shop) {
+        throw new Error('Shop not found');
+    }
+
+    await ShopRent.updateMany(
+        { shopId: id },
+        {
+            $set: {
+                "shopLogo": shop.logo,
+                "shopName": shop.name
+            }
+        }
+    );
+
+    return shop;
+}
 
 const update = async (req, res) => {
     try {
@@ -202,15 +234,7 @@ const update = async (req, res) => {
             ));
         }
 
-        const shop = await Shop.findByIdAndUpdate(id, req.body, { new: true });
-
-        if (!shop) {
-            return res.status(404).json(ApiResponse.error(
-                404,
-                'Shop not found',
-                ['Shop does not exist']
-            ));
-        }
+        const shop = await updateShopAndAsync(id, req.body);
 
         return res.status(200).json(ApiResponse.succes(
             200,
@@ -219,6 +243,14 @@ const update = async (req, res) => {
         ));
 
     } catch (err) {
+        if (err.message === 'Shop not found') {
+            return res.status(404).json(ApiResponse.error(
+                404, 
+                'Shop not found', 
+                ['Shop does not exist']
+            ));
+        }
+
         return res.status(500).json(ApiResponse.error(
             500,
             'Error updating shop',
@@ -358,3 +390,4 @@ module.exports.remove = remove;
 module.exports.activate = activate;
 module.exports.deactivate = deactivate;
 module.exports.getByIdUser = getByIdUser;
+module.exports.updateShopAndAsync = updateShopAndAsync;

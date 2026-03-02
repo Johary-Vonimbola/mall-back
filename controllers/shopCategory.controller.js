@@ -1,5 +1,7 @@
+const Shop = require('../models/Shop');
 const ShopCategory = require('../models/ShopCategory');
 const ApiResponse = require('../utils/ApiResponse');
+const { updateShopAndAsync } = require('./shop.controller');
 
 const getAll = async (req, res) => {
     try {
@@ -112,6 +114,19 @@ const update = async (req, res) => {
             { new: true }
         );
 
+        const shops = await Shop.find({
+            categoryId: id
+        });
+
+        for (let i = 0; i < shops.length; i++) {
+            const data = shops[i].toObject();
+
+            data.category = shopCategory.name;
+            data.categoryId = shopCategory._id;
+
+            await updateShopAndAsync(shops[i]._id, data);
+        }
+
         if (!shopCategory) {
             return res.status(404).json(ApiResponse.error(
                 404,
@@ -145,6 +160,18 @@ const remove = async (req, res) => {
                 400,
                 'Error deleting Shop Category',
                 ['No id provided']
+            ));
+        }
+
+        const shopsByCategory = await Shop.find({
+            categoryId: id
+        });
+
+        if (shopsByCategory.length > 0) {
+            return res.status(301).json(ApiResponse.error(
+                301,
+                'Shop Category can not deleted',
+                ['Shop Category exist in other collections (Shop)']
             ));
         }
 
