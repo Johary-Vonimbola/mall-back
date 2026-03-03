@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
-            serverSelectionTimeoutMS: 10000
+            serverSelectionTimeoutMS: process.env.CONNEXION_TIME
         });
 
         console.log('------------------MongoDB connected------------------');
