@@ -81,7 +81,7 @@ const save = async (req, res) => {
             updateData.picture = result.secure_url;            
         }
 
-        const product = new Product(data);
+        const product = new Product(updateData);
         await product.save();
 
         return res.status(201).json(ApiResponse.succes(
